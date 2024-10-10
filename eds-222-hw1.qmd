@@ -1,7 +1,7 @@
 ---
 title: "EDS 222: Homework 1"
-date: "Assigned ???, due ???"
-author: "Your Name Here"
+date: "Assigned 2024-09-26, due 2024-10-14
+author: "Jordan Sibley"
 ---
 
 ## Background
@@ -33,16 +33,53 @@ crowdsourced <- readRDS(file.path("data", "airpol-PK-crowdsourced.RDS"))
 govt <- readRDS(file.path("data", "airpol-PK-govt.RDS"))
 ```
 
+```{r}
+# load libraries 
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+# Load in data
+crowdsourced <- readRDS(file.path("data", "airpol-PK-crowdsourced.RDS"))
+govt <- readRDS(file.path("data", "airpol-PK-govt.RDS"))
+```
+
 ::: callout-warning
 There's an implicit assumption about file organization in the code above. What is it? How can you make the code work?
 :::
 
 1.  These dataframes have one row per pollution observation. How many pollution records are in each dataset?
+
+    ```{r}
+    nrow(crowdsourced) # 5488 rows 
+    sum(is.na(crowdsourced$PM)) # no NA values 
+
+    nrow(govt) # 1960 rows 
+    sum(is.na(govt$PM)) # no NA values 
+    ```
+
 2.  Each monitor is located at a unique latitude and longitude location. How many unique monitors are in each dataset?
 
 ::: callout-tip
 `group_by(longitude,latitude)` and `cur_group_id()` in `dplyr` will help in creating a unique identifier for each (longitude, latitude) pair.
 :::
+
+```{r}
+crowd_loc <- crowdsourced %>% 
+  group_by(longitude, latitude) %>%
+  mutate(id = cur_group_id())
+unique(crowd_loc$id)
+# There are 11 unique lat long points 
+
+govt_loc <- govt %>% 
+  group_by(longitude, latitude) %>% 
+  mutate(id = cur_group_id())
+unique(govt_loc$id)
+# There are 5 unique lat long points  
+```
+
+The `crowdsource` data set has 11 unique monitor locations while the `govt` data set has 5.
 
 ### Question 2
 
@@ -50,9 +87,19 @@ The goal of pollution monitoring in Lahore is to measure the average pollution c
 
 1.  What is the *population* in this setting? Please be precise.
 
+The population in this setting is the air quality, specifically particulate matter, of all the city of Lahore. This includes indoor settings and outdoor settings.
+
 2.  What are the *samples* in this setting? Please be precise.
 
+The samples in this setting is the air quality collected from air quality monitors. These monitors are not able to take in air quality data of very far distances, and therefore is only a sample of the total population.
+
 3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters.
+
+For the crowd-sourced data, a potential bias that could occur is due to the nature of the home in which the air quality monitors were placed in. For example, we are unable to know how well ventilated these homes are or if they contain any air filters inside. Additionally, the data can not account for activites that could take place inside the home that could impact particulate matter (i.e smoking, cooking, etc). 
+
+For the government data, a potential bias that could impact how we interpret this data is that the monitor locations were not randomly chosen. Up above it outlines that these locations were strategically located to places with cleaner air. Since the locations were not random, it is difficult to say if this data is able to accurately display the air quality of the entire city.
+
+
 
 ### Question 3
 

@@ -1,3 +1,6 @@
+# add data folder 
+/data
+
 .Rproj.user
 .Rhistory
 .RData
