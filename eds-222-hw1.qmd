@@ -95,21 +95,75 @@ The samples in this setting is the air quality collected from air quality monito
 
 3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters.
 
-For the crowd-sourced data, a potential bias that could occur is due to the nature of the home in which the air quality monitors were placed in. For example, we are unable to know how well ventilated these homes are or if they contain any air filters inside. Additionally, the data can not account for activites that could take place inside the home that could impact particulate matter (i.e smoking, cooking, etc). 
+For the crowd-sourced data, a potential bias that could occur is due to the nature of the home in which the air quality monitors were placed in. For example, we are unable to know how well ventilated these homes are or if they contain any air filters inside. Additionally, the data can not account for activites that could take place inside the home that could impact particulate matter (i.e smoking, cooking, etc).
 
 For the government data, a potential bias that could impact how we interpret this data is that the monitor locations were not randomly chosen. Up above it outlines that these locations were strategically located to places with cleaner air. Since the locations were not random, it is difficult to say if this data is able to accurately display the air quality of the entire city.
-
-
 
 ### Question 3
 
 1.  For both the government data and the crowd-sourced data, report the sample mean, sample minimum, and sample maximum value of PM 2.5 (measured in $\mu g/m^3$).
+
+```{r}
+# mean, min, max for crowd sourced data PM 
+mean(crowdsourced$PM)
+min(crowdsourced$PM)
+max(crowdsourced$PM)
+
+# mean, min, amx for government data PM 
+mean(govt$PM)
+min(govt$PM)
+max(govt$PM)
+```
+
+#### For the particulate matter of crowd sourced data:
+
+mean = 70.2 $\mu g/m^3$
+
+minimum = 20.0 $\mu g/m^3$
+
+maximum = 120.0 $\mu g/m^3$
+
+#### For the particulate matter of government sourced data:
+
+mean = 39.6 $\mu g/m^3$
+
+minimum = 15.0 $\mu g/m^3$
+
+maximum = 65.0 $\mu g/m^3$
+
+
 2.  Discuss any key differences that you see between these two samples.
+
+It seems when comparing the two data sources that the PM values (mean, min, and max) are all lower in the government data than the crowd sourced data. 
+
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
+
+The results of the mean are to be expected as it was reported that the government selected areas with better air quality to place there monitors while the crowd sourced data comes mainly from inside people's homes.   
 
 ### Question 4
 
 Use the location of the air pollution stations for both of the sampling strategies to generate a map showing locations of each observation. Color the two samples with different colors to highlight how each sample obtains measurements from different parts of the city.
+
+```{r}
+# scatter plot of crowdsourced + govt monitor locations 
+
+ggplot() +
+  geom_point(aes(x = longitude, 
+                 y = latitude,
+                 fill = "firebrick"),
+             data = crowdsourced) +
+  geom_point(aes(x = longitude, 
+                 y = latitude,
+                fill = "dodgerblue"),
+             data = govt) 
+  
+  
+  #scale_colour_manual(values = c("firebrick", "dodgerblue"))
+ 
+  
+             
+```
+
 
 ::: callout-tip
 `longitude` indicates location in the *x*-direction, while `latitude` indicates location in the *y*-direction. With `ggplot2` this should be nothing fancy. We'll do more spatial data in `R` later in the course.
