@@ -1,6 +1,6 @@
 ---
 title: "EDS 222: Homework 1"
-date: "Assigned 2024-09-26, due 2024-10-14
+date: "2024-10-14"
 author: "Jordan Sibley"
 ---
 
@@ -131,14 +131,13 @@ minimum = 15.0 $\mu g/m^3$
 
 maximum = 65.0 $\mu g/m^3$
 
-
 2.  Discuss any key differences that you see between these two samples.
 
-It seems when comparing the two data sources that the PM values (mean, min, and max) are all lower in the government data than the crowd sourced data. 
+It seems when comparing the two data sources that the PM values (mean, min, and max) are all lower in the government data than the crowd sourced data.
 
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
 
-The results of the mean are to be expected as it was reported that the government selected areas with better air quality to place there monitors while the crowd sourced data comes mainly from inside people's homes.   
+The results of the mean are to be expected as it was reported that the government selected areas with better air quality to place there monitors while the crowd sourced data comes mainly from inside people's homes.
 
 ### Question 4
 
@@ -146,24 +145,24 @@ Use the location of the air pollution stations for both of the sampling strategi
 
 ```{r}
 # scatter plot of crowdsourced + govt monitor locations 
-
 ggplot() +
   geom_point(aes(x = longitude, 
                  y = latitude,
-                 fill = "firebrick"),
+                 color = "Crowd sourced"),
              data = crowdsourced) +
   geom_point(aes(x = longitude, 
                  y = latitude,
-                fill = "dodgerblue"),
-             data = govt) 
-  
-  
-  #scale_colour_manual(values = c("firebrick", "dodgerblue"))
- 
+                 color = "Government"),   
+             data = govt) +
+  scale_color_manual(name = "Air Quailty Data Source", 
+                     values = c("Crowd sourced" = "dodgerblue", 
+                                "Government" = "firebrick"))  +
+  labs(x = "Longitude",
+       y = "Latitude",
+       title = "Air Quality Monitor Locations in Lahore, Pakistan")
   
              
 ```
-
 
 ::: callout-tip
 `longitude` indicates location in the *x*-direction, while `latitude` indicates location in the *y*-direction. With `ggplot2` this should be nothing fancy. We'll do more spatial data in `R` later in the course.
@@ -172,6 +171,8 @@ ggplot() +
 ### Question 5
 
 The local newspaper in Pakistan, *Dawn*, claims that the government is misreporting the air pollution levels in Lahore. Do the locations of monitors in question 4, relative to crowd-sourced monitors, suggest anything about a possible political bias?
+
+The locations of monitors as shown by the plot above show a potential error in accurately sampling air quality data in Lahore, Pakistan. The government selected air quality monitors are very condensed to one area of the city while the crowd sourced monitors are much more spread out. This could indicate a bias of the government monitors and could explain why they are reporting better air quality (lower PM $\mu g/m^3$) than the crowd sourced data.
 
 ### Question 6
 
@@ -183,12 +184,59 @@ NASA's satellite data indicates that the average PM across Lahore is 89.2 $\mu g
 
 First, generate a *random sample* of size $n=1000$ air pollution records by (i) pooling observations across the government and the crowd-sourced data; and (ii) drawing observations at random from this pooled sample.
 
+```{r}
+# first I want to create a new row in each dataset that includes its source
+crowdsourced <- crowdsourced %>% 
+  mutate(source = "Crowd Sourced")
+govt <- govt %>% 
+  mutate(source = "Government")
+
+# combine the 2 datasets using bind_rows()
+total_pm <- bind_rows(crowdsourced, govt)
+
+# I know this worked because 
+if ( (nrow(crowdsourced) + nrow(govt)) == nrow(total_pm) ) {
+  print("Our new dataset, total_pm has the correct # of rows")
+} else {
+  print("Something went wrong")
+}
+```
+
+```{r}
+# generate a random sample of the pooled data 
+rand_sample <- total_pm %>% 
+  sample_n(size = 1000)
+```
+
 ::: callout-tip
 `bind_rows()` may be helpful.
 :::
 
 Second, create a *stratified random sample*. Do so by (i) stratifying your pooled data-set into strata of 0.01 degrees of latitude, and (ii) randomly sampling 200 air pollution observations from each stratum.
 
+```{r}
+# first I have to round the degrees latitude to 2 decimal places 
+total_pm$latitude <- round(total_pm$latitude, 2)
+
+# check that each latitude has over 200 rows  
+table(total_pm$latitude)
+
+# now I will do a sample (size = 200) of each stratum )0.01 degrees of latitude
+strat_sample <- total_pm %>% 
+  group_by(latitude) %>% 
+  sample_n(size = 200)
+```
+
 #### Question 6.2
 
 Compare estimated means of PM 2.5 for each sampling strategy to the NASA estimate of 89.2 $\mu g/m^3$. Which sample seems to match the satellite data best? What would you recommend the Prime Minister do? Does your proposed sampling strategy rely more on government or on crowd-sourced data? Why might that be the case?
+
+```{r}
+# mean of the random sample of pooled data  
+mean(rand_sample$PM) 
+
+# mean of the stratified random sample of pooled data 
+mean(strat_sample$PM) 
+```
+
+The mean of the stratified random sample (68.158 $\mu g/m^3$) is slightly closer to the NASA estimate of 89.2 $\mu g/m^3$. However, the stratified sample mean is much closer to the value random sample mean which is 61.735 $\mu g/m^3$. Out of the two sample means I would recommend the Prime Minister use the stratified sample mean as it more evenly covers the latitudes of the city. The caveat of this sampling method is that it heavily relies on the crowd sourced data as we saw that the government source data is all from a very narrow latitude in the city. I would recommend that the Prime minister enacts some kind of protocol that more randomly selects the location of air quality monitors throughout the city to get a better sense of the overall air quality. This protocol could also be beneficially as sometimes crowd sourced data can be unreliable as you can't always trust the source of the data. 
