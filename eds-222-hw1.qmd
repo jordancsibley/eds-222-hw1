@@ -69,13 +69,15 @@ There's an implicit assumption about file organization in the code above. What i
 crowd_loc <- crowdsourced %>% 
   group_by(longitude, latitude) %>%
   mutate(id = cur_group_id())
-unique(crowd_loc$id)
-# There are 11 unique lat long points 
+
+length(unique(crowd_loc$id))
+# There are 14 unique lat long points 
 
 govt_loc <- govt %>% 
   group_by(longitude, latitude) %>% 
   mutate(id = cur_group_id())
-unique(govt_loc$id)
+
+length(unique(govt_loc$id))
 # There are 5 unique lat long points  
 ```
 
@@ -87,11 +89,11 @@ The goal of pollution monitoring in Lahore is to measure the average pollution c
 
 1.  What is the *population* in this setting? Please be precise.
 
-The population in this setting is the air quality, specifically particulate matter, of all the city of Lahore. This includes indoor settings and outdoor settings.
+The population in this setting is the air quality, specifically particulate matter, of all the city of Lahore from November 4, 2018 to November 30, 2019. This includes indoor settings and outdoor settings.
 
 2.  What are the *samples* in this setting? Please be precise.
 
-The samples in this setting is the air quality collected from air quality monitors. These monitors are not able to take in air quality data of very far distances, and therefore is only a sample of the total population.
+The samples in this setting is the air quality collected from would be crowdsourced air monitors and and government sourced air monitors from November 4, 2018 to November 30, 2019.
 
 3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters.
 
@@ -137,7 +139,7 @@ It seems when comparing the two data sources that the PM values (mean, min, and 
 
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
 
-The results of the mean are to be expected as it was reported that the government selected areas with better air quality to place there monitors while the crowd sourced data comes mainly from inside people's homes.
+The results of the mean are to be expected as it was reported that the government selected areas with better air quality to place there monitors while the crowd sourced data comes mainly from inside people's homes, which could also be a potential bias. Biases could arise in the crowd sourced data due to the type of people willing to participate and their particular expertise in operating the monitors.
 
 ### Question 4
 
@@ -200,12 +202,21 @@ if ( (nrow(crowdsourced) + nrow(govt)) == nrow(total_pm) ) {
 } else {
   print("Something went wrong")
 }
+
 ```
 
 ```{r}
 # generate a random sample of the pooled data 
+set.seed(4321) # set the seed of the random sample 
 rand_sample <- total_pm %>% 
-  sample_n(size = 1000)
+  group_by() %>% 
+  slice_sample(n = 1000)
+
+# figure out the dimensions of pooled data
+kableExtra::kable(rand_sample %>% 
+  group_by(source) %>% 
+  count()) %>% 
+  kableExtra::kable_styling()
 ```
 
 ::: callout-tip
@@ -239,4 +250,5 @@ mean(rand_sample$PM)
 mean(strat_sample$PM) 
 ```
 
-The mean of the stratified random sample (68.158 $\mu g/m^3$) is slightly closer to the NASA estimate of 89.2 $\mu g/m^3$. However, the stratified sample mean is much closer to the value random sample mean which is 61.735 $\mu g/m^3$. Out of the two sample means I would recommend the Prime Minister use the stratified sample mean as it more evenly covers the latitudes of the city. The caveat of this sampling method is that it heavily relies on the crowd sourced data as we saw that the government source data is all from a very narrow latitude in the city. I would recommend that the Prime minister enacts some kind of protocol that more randomly selects the location of air quality monitors throughout the city to get a better sense of the overall air quality. This protocol could also be beneficially as sometimes crowd sourced data can be unreliable as you can't always trust the source of the data. 
+The mean of the stratified random sample (68.158 $\mu g/m^3$) is slightly closer to the NASA estimate of 89.2 $\mu g/m^3$. However, the stratified sample mean is much closer to the value random sample mean which is 61.735 $\mu g/m^3$. Out of the two sample means I would recommend the Prime Minister use the stratified sample mean as it more evenly covers the latitudes of the city (however, both are substantially too low). 
+. The caveat of this sampling method is that it heavily relies on the crowd sourced data as we saw that the government source data is all from a very narrow latitude in the city. I would recommend that the Prime minister enacts some kind of protocol that more randomly selects the location of air quality monitors throughout the city to get a better sense of the overall air quality. This protocol could also be beneficially as sometimes crowd sourced data can be unreliable as you can't always trust the source of the data.
